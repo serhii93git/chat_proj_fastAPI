@@ -1,0 +1,101 @@
+# Python стандартні виключення
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Лог файли
+*.log
+
+# Віртуальні середовища
+venv/
+ENV/
+env/
+.venv/
+env.bak/
+venv.bak/
+
+# Конфігураційні файли
+*.env
+*.ini
+*.cfg
+*.toml
+
+# Паролі та ключі
+*.pem
+*.key
+
+# IDE файли
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Дистрибутивні файли
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Пакунки
+*.wheel
+*.egg
+*.whl
+
+# Системні файли
+.DS_Store
+Thumbs.db
+
+# Бібліотеки
+*.lib
+*.a
+
+# Docker файли
+docker-compose.override.yml
+
+# Pytest файли
+.pytest_cache/
+
+# Coverage files
+.coverage
+.coverage.*
+htmlcov/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Mypy files
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SQLAlchemy
+*.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Пайплайни
+*.pipeline
+
+# Продуктові артефакти
+*.html
+*.pdf
+
+# Секрети
+secrets.json
+config.json
+
+# Static files
+static/
+media/
