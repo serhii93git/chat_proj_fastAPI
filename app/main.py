@@ -1,5 +1,6 @@
-import json  # Import json module
+import json
 from fastapi import FastAPI, WebSocket, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
 from sqlmodel import SQLModel, Session, select
@@ -10,9 +11,20 @@ from .models import Message, User
 app = FastAPI()
 
 
+origins = [
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-
 
 class ConnectionManager:
     def __init__(self):
@@ -29,14 +41,23 @@ class ConnectionManager:
         for connection in self.active_connections:
             await connection.send_text(message)
 
-
 manager = ConnectionManager()
-
 
 @app.on_event('startup')
 def on_startup():
     create_db_and_tables()
 
+@app.get("/messages/{username}", response_model=List[dict])
+def get_messages(username: str, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.username == username)).first()
+    if not user:
+        return []
+    messages = session.exec(select(Message).where(Message.user_id == user.id)).all()
+    return [{
+        "username": user.username,
+        "content": message.content,
+        "send_time": message.send_time.isoformat()
+    } for message in messages]
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket, username: str = Query(...), session: Session = Depends(get_session)):
@@ -48,6 +69,11 @@ async def websocket_endpoint(websocket: WebSocket, username: str = Query(...), s
         session.add(user)
         session.commit()
         session.refresh(user)
+
+    # Send chat history to the user upon connection
+    messages = session.exec(select(Message).where(Message.user_id == user.id)).all()
+    history = [{"username": user.username, "content": message.content, "send_time": message.send_time.isoformat()} for message in messages]
+    await websocket.send_text(json.dumps(history))
 
     try:
         while True:
@@ -63,7 +89,8 @@ async def websocket_endpoint(websocket: WebSocket, username: str = Query(...), s
             # Create a JSON message
             json_message = {
                 "username": username,
-                "content": data
+                "content": data,
+                "send_time": message.send_time.isoformat()
             }
             await manager.broadcast(json.dumps(json_message))
     except Exception as e:
